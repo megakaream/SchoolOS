@@ -4,11 +4,12 @@ import javax.servlet.http.Cookie;
 
 import org.vaadin.activelink.ActiveLink;
 
+import com.ies.schoolos.component.ui.ContentPage;
 import com.ies.schoolos.container.Container;
 import com.ies.schoolos.schema.SchoolSchema;
 import com.ies.schoolos.schema.SessionSchema;
-import com.ies.schoolos.type.Province;
 import com.ies.schoolos.type.StudentCodeGenerateType;
+import com.ies.schoolos.type.dynamic.Province;
 import com.ies.schoolos.utility.BCrypt;
 import com.ies.schoolos.utility.Notification;
 
@@ -39,7 +40,7 @@ import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
 import com.vaadin.ui.Window;
 
-public class SchoolView extends GridLayout {
+public class SchoolView extends ContentPage {
 	private static final long serialVersionUID = 1L;
 	
 	private SQLContainer schoolContainer = Container.getInstance().getSchoolContainer();
@@ -48,6 +49,8 @@ public class SchoolView extends GridLayout {
 	private String passwordHash = null;
 	
 	private FieldGroup schoolBinder;
+	
+	private GridLayout gridLayout;
 	
 	private FormLayout schoolForm;
 	private Label schoolTitle;
@@ -77,14 +80,24 @@ public class SchoolView extends GridLayout {
 	private Button shortUrlSave;
 	
 	public SchoolView() {
+		super("ตั้งค่าข้อมูลทั่วไป");
+		
+		schoolContainer.refresh();
+		
 		buildMainLayout();
 	}
 	
 	private void buildMainLayout(){
-		setWidth("100%");
-		setRows(3);
-		setColumns(2);
-		setSpacing(true);
+		setHeight("-1px");
+		
+		gridLayout = new GridLayout();
+		gridLayout.setWidth("100%");
+		gridLayout.setRows(3);
+		gridLayout.setColumns(2);
+		gridLayout.setSpacing(true);
+		addComponent(gridLayout);
+		setExpandRatio(gridLayout, 1);
+		
 		
 		intSchoolLayout();
 		initShortUrlLayout();
@@ -97,7 +110,7 @@ public class SchoolView extends GridLayout {
 		schoolForm = new FormLayout();
 		schoolForm.setSizeFull();
 		schoolForm.setStyleName("border-white");
-		addComponent(schoolForm,0,0,0,1);
+		gridLayout.addComponent(schoolForm,0,0,0,1);
 		
 		schoolTitle = new Label("ข้อมูลโรงเรียน");
 		schoolForm.addComponent(schoolTitle);
@@ -129,6 +142,7 @@ public class SchoolView extends GridLayout {
 
 		email = new TextField("อีเมลล์");
 		email.setRequired(true);
+		email.setEnabled(false);
 		email.setInputPrompt("อีเมลล์");
 		schoolForm.addComponent(email);
 		
@@ -213,7 +227,7 @@ public class SchoolView extends GridLayout {
 	private void initPeriodLayout(){
 		periodForm = new FormLayout();
 		periodForm.setStyleName("border-white");
-		addComponent(periodForm);
+		gridLayout.addComponent(periodForm);
 		
 		recruitTitle = new Label("ช่วงสมัครเรียน");
 		periodForm.addComponent(recruitTitle);
@@ -234,7 +248,7 @@ public class SchoolView extends GridLayout {
 	private void initShortUrlLayout(){
 		shortUrlForm = new FormLayout();
 		shortUrlForm.setStyleName("border-white");
-		addComponent(shortUrlForm);
+		gridLayout.addComponent(shortUrlForm);
 		
 		shortUrlTitle = new Label("ลิ้งเข้าระบบ [www.schoolosplus.com/url]");
 		shortUrlForm.addComponent(shortUrlTitle);
@@ -267,7 +281,7 @@ public class SchoolView extends GridLayout {
 	private void initStudentCodeLayout(){
 		studentCodeForm = new FormLayout();
 		studentCodeForm.setStyleName("border-white");
-		addComponent(studentCodeForm);
+		gridLayout.addComponent(studentCodeForm);
 		
 		studentCodeTitle = new Label("รหัสนักเรียน");
 		studentCodeForm.addComponent(studentCodeTitle);

@@ -29,7 +29,6 @@ public class RecruitStudentSchema implements java.io.Serializable{
 	public static final String RELIGION = "religion";
 	public static final String RACE = "race";
 	public static final String NATIONALITY = "nationality";
-	public static final String MARITAL_STATUS= "marital_status";
 	public static final String BIRTH_DATE = "birth_date";
 	public static final String BLOOD = "blood";
 	public static final String HEIGHT = "height";
@@ -57,4 +56,10 @@ public class RecruitStudentSchema implements java.io.Serializable{
 	public static final String GUARDIAN_ID = "guardian_id";
 	public static final String GUARDIAN_RELATION = "guardian_relation";
 	public static final String REGISTER_DATE = "register_date";
+	
+	public static final String EXAM_BUILDING_ID = "exam_building_id";
+	public static final String SCORE = "score";
+	public static final String CLASS_ROOM_ID = "class_room_id";
+	
+	public static final String IS_CONFIRM = "is_confirm";
 }

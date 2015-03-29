@@ -29,4 +29,8 @@
     <inherits name="org.vaadin.applet.AppletintegrationWidgetset" />
 
     <inherits name="org.vaadin.activelink.ActivelinkWidgetset" />
+
+    <inherits name="org.vaadin.hene.popupbutton.widgetset.PopupbuttonWidgetset" />
+
+    <inherits name="org.tepi.filtertable.gwt.FilterTableWidgetset" />
 </module>

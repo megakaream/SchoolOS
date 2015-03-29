@@ -3,11 +3,17 @@ package com.ies.schoolos.component.recruit;
 import java.util.Date;
 import java.util.HashMap;
 
+import org.tepi.filtertable.FilterTable;
 import org.vaadin.dialogs.ConfirmDialog;
 import org.vaadin.haijian.ExcelExporter;
 
+import com.ies.schoolos.component.ui.ContentPage;
 import com.ies.schoolos.container.Container;
+import com.ies.schoolos.filter.TableFilterDecorator;
+import com.ies.schoolos.filter.TableFilterGenerator;
 import com.ies.schoolos.report.RecruitStudentReport;
+import com.ies.schoolos.report.excel.RecruitStudentToExcel;
+import com.ies.schoolos.schema.BuildingSchema;
 import com.ies.schoolos.schema.RecruitStudentSchema;
 import com.ies.schoolos.schema.SchoolSchema;
 import com.ies.schoolos.schema.SessionSchema;
@@ -19,23 +25,21 @@ import com.vaadin.data.util.filter.Compare.Equal;
 import com.vaadin.data.util.sqlcontainer.RowId;
 import com.vaadin.data.util.sqlcontainer.SQLContainer;
 import com.vaadin.server.FontAwesome;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickListener;
-import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.CustomTable.Align;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Notification;
-import com.vaadin.ui.Table;
 import com.vaadin.ui.Notification.Type;
-import com.vaadin.ui.Table.Align;
 import com.vaadin.ui.UI;
-import com.vaadin.ui.VerticalLayout;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Window.CloseEvent;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.Window.CloseListener;
 
-public class RecruitStudentListView  extends VerticalLayout{
+public class RecruitStudentListView  extends ContentPage{
 
 	private static final long serialVersionUID = 1L;
 	
@@ -43,26 +47,31 @@ public class RecruitStudentListView  extends VerticalLayout{
 	
 	private SQLContainer sContainer = Container.getInstance().getRecruitStudentContainer();
 	private SQLContainer fContainer = Container.getInstance().getRecruitFamilyContainer();
+	private SQLContainer bContainer = Container.getInstance().getBuildingContainer();
 	
 	private HashMap<String, Integer> genderQty = new HashMap<String, Integer>();
 	private HashMap<String, Integer> classRangeQty = new HashMap<String, Integer>();
 	
 	private HorizontalLayout toolbar;
 	private Button add;	
-	private Table table;
+	private FilterTable  table;
 	
-	public RecruitStudentListView() {		
+	public RecruitStudentListView() {	
+		super("รายชื่อผู้สมัครเรียน");
+
+		sContainer.refresh();
+		fContainer.refresh();
+		bContainer.refresh();
+		
 		buildMainLayout();
 	}	
 	
 	private void buildMainLayout(){
-		setSizeFull();
-		setSpacing(true);
-		
+		/* Toolbar */
 		toolbar = new HorizontalLayout();
 		toolbar.setSpacing(true);
 		addComponent(toolbar);
-		
+				
 		add = new Button("เพิ่ม", FontAwesome.USER);
 		add.addClickListener(new ClickListener() {
 			private static final long serialVersionUID = 1L;
@@ -85,27 +94,37 @@ public class RecruitStudentListView  extends VerticalLayout{
 		});
 		toolbar.addComponent(add);
 		
-		table = new Table();
+		ExcelExporter excelExporter = new ExcelExporter(new RecruitStudentToExcel());
+		excelExporter.setIcon(FontAwesome.FILE_EXCEL_O);
+		excelExporter.setCaption("ส่งออกไฟล์ Excel");
+		toolbar.addComponent(excelExporter);
+		
+		/* Content */
+		table = new FilterTable();
 		table.setSizeFull();
 		table.setSelectable(true);
-		table.setFooterVisible(true);
-		addComponent(table);
-        setExpandRatio(table, 1);
-
-		table.addContainerProperty(RecruitStudentSchema.RECRUIT_CODE, String.class, null);
+		table.setFooterVisible(true);        
+        
+        table.addContainerProperty(RecruitStudentSchema.RECRUIT_CODE, String.class, null);
 		table.addContainerProperty(RecruitStudentSchema.CLASS_RANGE, String.class, null);
 		table.addContainerProperty(RecruitStudentSchema.PRENAME, String.class, null);
 		table.addContainerProperty(RecruitStudentSchema.FIRSTNAME, String.class, null);
 		table.addContainerProperty(RecruitStudentSchema.LASTNAME, String.class, null);
 		table.addContainerProperty(RecruitStudentSchema.REGISTER_DATE, Date.class, null);
+		table.addContainerProperty(RecruitStudentSchema.EXAM_BUILDING_ID, String.class, null);
 		table.addContainerProperty("note", HorizontalLayout.class, null);
 
-		table.setColumnAlignment(RecruitStudentSchema.RECRUIT_CODE,Align.CENTER);
+		table.setFilterDecorator(new TableFilterDecorator());
+		table.setFilterGenerator(new TableFilterGenerator());
+        table.setFilterBarVisible(true);
+        
+		table.setColumnAlignment((Object)RecruitStudentSchema.RECRUIT_CODE,Align.CENTER);
 		table.setColumnAlignment(RecruitStudentSchema.CLASS_RANGE,Align.CENTER);
 		table.setColumnAlignment(RecruitStudentSchema.PRENAME,Align.CENTER);
 		table.setColumnAlignment(RecruitStudentSchema.FIRSTNAME,Align.CENTER);
 		table.setColumnAlignment(RecruitStudentSchema.LASTNAME,Align.CENTER);
 		table.setColumnAlignment(RecruitStudentSchema.REGISTER_DATE,Align.CENTER);
+		table.setColumnAlignment(RecruitStudentSchema.EXAM_BUILDING_ID,Align.CENTER);
 		table.setColumnAlignment("note",Align.CENTER);
 
 		table.setColumnHeader(RecruitStudentSchema.RECRUIT_CODE, "หมายเลขสมัคร");
@@ -114,6 +133,7 @@ public class RecruitStudentListView  extends VerticalLayout{
 		table.setColumnHeader(RecruitStudentSchema.FIRSTNAME, "ชื่อ");
 		table.setColumnHeader(RecruitStudentSchema.LASTNAME, "สกุล");
 		table.setColumnHeader(RecruitStudentSchema.REGISTER_DATE, "วันที่สมัคร");
+		table.setColumnHeader(RecruitStudentSchema.EXAM_BUILDING_ID, "ห้องสอบ");
 		table.setColumnHeader("note", "");
 		table.setVisibleColumns(
 				RecruitStudentSchema.RECRUIT_CODE, 
@@ -122,16 +142,14 @@ public class RecruitStudentListView  extends VerticalLayout{
 				RecruitStudentSchema.FIRSTNAME, 
 				RecruitStudentSchema.LASTNAME,
 				RecruitStudentSchema.REGISTER_DATE,
+				RecruitStudentSchema.EXAM_BUILDING_ID,
 				"note");
 		
-		table.setFooterVisible(true);
+		addComponent(table);
+        setExpandRatio(table, 1);
+
 		setTableData();
 		setFooterData();
-		
-		ExcelExporter excelExporter = new ExcelExporter(table);
-		excelExporter.setIcon(FontAwesome.FILE_EXCEL_O);
-		excelExporter.setCaption("ส่งออกไฟล์ Excel");
-		toolbar.addComponent(excelExporter);
 	}
 	
 	/*สร้าง Layout ของข้อมูลเพื่อนำไปใส่ในตาราง*/
@@ -139,8 +157,7 @@ public class RecruitStudentListView  extends VerticalLayout{
 		genderQty = new HashMap<String, Integer>();
 		classRangeQty = new HashMap<String, Integer>();
 		
-		sContainer.addContainerFilter(new Equal(SchoolSchema.SCHOOL_ID,
-				UI.getCurrent().getSession().getAttribute(SessionSchema.SCHOOL_ID)));;
+		sContainer.addContainerFilter(new Equal(SchoolSchema.SCHOOL_ID,	UI.getCurrent().getSession().getAttribute(SessionSchema.SCHOOL_ID)));
 		total= sContainer.size();
 		for(final Object itemId:sContainer.getItemIds()){
 			/* ลบ WHERE ออกจาก Query เพื่อป้องกันการค้างของคำสั่่งจากการทำงานอื่นที่เรียกตัวแปรไปใช้ */
@@ -151,7 +168,6 @@ public class RecruitStudentListView  extends VerticalLayout{
 			final HorizontalLayout buttonLayout = new HorizontalLayout();
 
 			Button	print = new Button("พิมพ์ใบสมัคร",FontAwesome.PRINT);
-			print.setVisible(false);
 			print.setWidth("100%");
 			print.addClickListener(new ClickListener() {
 				private static final long serialVersionUID = 1L;
@@ -236,6 +252,17 @@ public class RecruitStudentListView  extends VerticalLayout{
 	
 	/*นำ Layout มาใส่ในแต่ละแถวของตาราง*/
 	private void addDataItem(Item item,Object itemId, Component component){
+		String building = "ยังไม่ระบุห้องสอบ";
+		/* ค้นหาห้องสอบ */
+		if(item.getItemProperty(RecruitStudentSchema.EXAM_BUILDING_ID).getValue() != null){
+			Item bItem = bContainer.getItem(new RowId(item.getItemProperty(RecruitStudentSchema.EXAM_BUILDING_ID).getValue()));
+			
+			Object value = bItem.getItemProperty(BuildingSchema.NAME).getValue() + 
+					" (" + bItem.getItemProperty(BuildingSchema.ROOM_NUMBER).getValue() + ")";
+			
+			building = value.toString();
+		}
+		
 		table.addItem(new Object[] {
 				item.getItemProperty(RecruitStudentSchema.RECRUIT_CODE).getValue(), 
 				ClassRange.getNameTh(Integer.parseInt(item.getItemProperty(RecruitStudentSchema.CLASS_RANGE).getValue().toString())),
@@ -243,6 +270,7 @@ public class RecruitStudentListView  extends VerticalLayout{
 				item.getItemProperty(RecruitStudentSchema.FIRSTNAME).getValue(), 
 				item.getItemProperty(RecruitStudentSchema.LASTNAME).getValue(),
 				item.getItemProperty(RecruitStudentSchema.REGISTER_DATE).getValue(),
+				building,
 				component
 		},itemId);
 		/* ใส่ข้อมูลเสร็จก็มานับ*/

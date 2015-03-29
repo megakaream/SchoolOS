@@ -1,5 +1,8 @@
 package com.ies.schoolos.schema.view;
 
+import com.ies.schoolos.schema.SessionSchema;
+import com.vaadin.ui.UI;
+
 public class StatRecruitStudentCodeSchema implements java.io.Serializable{
 	private static final long serialVersionUID = 1L;
 
@@ -7,6 +10,7 @@ public class StatRecruitStudentCodeSchema implements java.io.Serializable{
 	
 	public static final String MAX_CODE = "max_code";
 	public static final String MIN_CODE = "min_code";
+	public static final String SCHOOL_ID = "school_id";
 	
 	private static StatRecruitStudentCodeSchema instance = null;  
 
@@ -16,4 +20,17 @@ public class StatRecruitStudentCodeSchema implements java.io.Serializable{
         }  
         return instance;  
     }
+    
+    /* ดึงค่า หมายเลขสมัคร ที่มากที่สุด น้อยที่สุดของห้องเรียน
+     * จากโรงเรียน
+     * eg. SELECT * FROM stat_class_room WHERE class_year = ? AND school_id = ?*/
+    public static String getQuery(){
+    	String query = "SELECT * FROM "
+    			+ StatRecruitStudentCodeSchema.TABLE_NAME + " WHERE " + 
+    			StatRecruitStudentCodeSchema.SCHOOL_ID + "=" +
+    			UI.getCurrent().getSession().getAttribute(SessionSchema.SCHOOL_ID);
+    	return query;
+    }
+    
+    
 }

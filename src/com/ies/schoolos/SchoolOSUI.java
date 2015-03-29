@@ -24,7 +24,8 @@ import com.vaadin.ui.UI;
 public class SchoolOSUI extends UI {
 
 	
-	private Container container = Container.getInstance();
+	//private Container container = Container.getInstance();
+	private SQLContainer schoolContainer = Container.getInstance().getSchoolContainer();
 	
 	@WebServlet(value = "/*", asyncSupported = true)
 	@VaadinServletConfiguration(productionMode = false, ui = SchoolOSUI.class, widgetset = "com.ies.schoolos.widgetset.SchoolosvaadinWidgetset")
@@ -98,16 +99,12 @@ public class SchoolOSUI extends UI {
 		String path = Page.getCurrent().getLocation().getPath();
 		path = path.substring(path.lastIndexOf("/")+1);
 		
-		
 		if(!path.equals("")){
-			SQLContainer schoolContainer = container.getSchoolContainer();
 			schoolContainer.addContainerFilter(new Equal(SchoolSchema.SHORT_URL,path));
 			if(schoolContainer.size() > 0){
 				for(Object itemId: schoolContainer.getItemIds()){
 					Item item = schoolContainer.getItem(itemId);
-					getSession().setAttribute(SessionSchema.SCHOOL_ID, item.getItemProperty(SchoolSchema.SCHOOL_ID).getValue());
-					getSession().setAttribute(SessionSchema.SCHOOL_NAME, item.getItemProperty(SchoolSchema.NAME).getValue());
-					getSession().setAttribute(SessionSchema.EMAIL, item.getItemProperty(SchoolSchema.EMAIL).getValue());
+					setSession(item);
 				}
 			}
 			//ลบ WHERE ออกจาก Query เพื่อป้องกันการค้างของคำสั่่งจากการทำงานอื่นที่เรียกตัวแปรไปใช้
@@ -123,7 +120,6 @@ public class SchoolOSUI extends UI {
 		if(email == null && password == null){
 			setContent(new LoginView());
 		}else{
-			SQLContainer schoolContainer = container.getSchoolContainer();
 			schoolContainer.addContainerFilter(new And(
 					new Equal(SchoolSchema.EMAIL,email.getValue()),
 					new Equal(SchoolSchema.PASSWORD,password.getValue())));
@@ -131,10 +127,7 @@ public class SchoolOSUI extends UI {
 			if(schoolContainer.size() != 0){
 				for(Object itemId: schoolContainer.getItemIds()){
 					Item item = schoolContainer.getItem(itemId);
-					getSession().setAttribute(SessionSchema.IS_ROOT, true);
-					getSession().setAttribute(SessionSchema.FIRSTNAME, item.getItemProperty(SchoolSchema.FIRSTNAME).getValue());
-					getSession().setAttribute(SessionSchema.SCHOOL_ID, item.getItemProperty(SchoolSchema.SCHOOL_ID).getValue());
-					getSession().setAttribute(SessionSchema.SCHOOL_NAME, item.getItemProperty(SchoolSchema.NAME).getValue());
+					setSession(item);
 				}
 				setContent(new SchoolOSView());
 			}else{
@@ -152,5 +145,13 @@ public class SchoolOSUI extends UI {
 		    }
 		}
 		return cookie;
+	}
+	
+	private void setSession(Item item){
+		getSession().setAttribute(SessionSchema.IS_ROOT, true);
+		getSession().setAttribute(SessionSchema.SCHOOL_ID, item.getItemProperty(SchoolSchema.SCHOOL_ID).getValue());
+		getSession().setAttribute(SessionSchema.SCHOOL_NAME, item.getItemProperty(SchoolSchema.NAME).getValue());
+		getSession().setAttribute(SessionSchema.FIRSTNAME, item.getItemProperty(SchoolSchema.FIRSTNAME).getValue());
+		getSession().setAttribute(SessionSchema.EMAIL, item.getItemProperty(SchoolSchema.EMAIL).getValue());
 	}
 }

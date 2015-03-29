@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 import com.ies.schoolos.schema.BuildingSchema;
 import com.ies.schoolos.schema.CitySchema;
+import com.ies.schoolos.schema.ClassRoomSchema;
 import com.ies.schoolos.schema.DistrictSchema;
 import com.ies.schoolos.schema.PostcodeSchema;
 import com.ies.schoolos.schema.ProvinceSchema;
@@ -31,6 +32,8 @@ public class Container implements Serializable {
 	private SQLContainer recruitFamilyContainer;
 	//ใช้สำหรับ Query อาคารเรียน
 	private SQLContainer buildingContainer;
+	//ใช้สำหรับ Query ห้องเรียน
+	private SQLContainer classRoomContainer;
 	//ใช้สำหรับ Query จังหวัด
 	private SQLContainer provinceContainer;
 	//ใช้สำหรับ Query อำเภอ
@@ -73,6 +76,11 @@ public class Container implements Serializable {
             TableQuery qBuilding = new TableQuery(BuildingSchema.TABLE_NAME, DbConnection.getConnection());
             //qBuilding.setVersionColumn("VERSION");
             buildingContainer = new SQLContainer(qBuilding);
+            
+            /* TableQuery และ SQLContainer สำหรับตาราง ชั้นเรียน */
+            TableQuery cBuilding = new TableQuery(ClassRoomSchema.TABLE_NAME, DbConnection.getConnection());
+            //qBuilding.setVersionColumn("VERSION");
+            classRoomContainer = new SQLContainer(cBuilding); 
             
             /* TableQuery และ SQLContainer สำหรับตาราง จังหวัด */
             TableQuery qProvince = new TableQuery(ProvinceSchema.TABLE_NAME, DbConnection.getConnection());
@@ -126,6 +134,10 @@ public class Container implements Serializable {
 
 	public SQLContainer getBuildingContainer() {
 		return buildingContainer;
+	}
+	
+	public SQLContainer getClassRoomContainer() {
+		return classRoomContainer;
 	}
 
 	public SQLContainer getProvinceContainer() {

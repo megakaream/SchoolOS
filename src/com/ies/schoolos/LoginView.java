@@ -7,9 +7,10 @@ import org.vaadin.dialogs.ConfirmDialog;
 import com.ies.schoolos.component.SchoolOSView;
 import com.ies.schoolos.component.recruit.AddRecruitStudentView;
 import com.ies.schoolos.container.Container;
+import com.ies.schoolos.schema.CookieSchema;
 import com.ies.schoolos.schema.SchoolSchema;
 import com.ies.schoolos.schema.SessionSchema;
-import com.ies.schoolos.type.Province;
+import com.ies.schoolos.type.dynamic.Province;
 import com.ies.schoolos.utility.BCrypt;
 import com.ies.schoolos.utility.Notification;
 import com.vaadin.data.Item;
@@ -367,18 +368,16 @@ public class LoginView extends VerticalLayout{
 
 			if(BCrypt.checkpw(password, passwordHash)){
 				UI ui = UI.getCurrent();
-				ui.getSession().setAttribute(SessionSchema.SCHOOL_ID, item.getItemProperty(SchoolSchema.SCHOOL_ID).getValue());
-				ui.getSession().setAttribute(SessionSchema.SCHOOL_NAME, item.getItemProperty(SchoolSchema.NAME).getValue());
-				ui.getSession().setAttribute(SessionSchema.FIRSTNAME, item.getItemProperty(SchoolSchema.FIRSTNAME).getValue());
+				setSession(item);
 				ui.setContent(new SchoolOSView());	
 				/* จำบัญชีผู้ใช้และรหัสผ่าน */
 				if(rememberPass.getValue()){
-					Cookie emailCookie = new Cookie(SessionSchema.EMAIL, username);
+					Cookie emailCookie = new Cookie(CookieSchema.EMAIL, username);
 					emailCookie.setMaxAge(12000);
 					emailCookie.setPath(VaadinService.getCurrentRequest().getContextPath());
 					VaadinService.getCurrentResponse().addCookie(emailCookie);
 					
-					Cookie passwordCookie = new Cookie(SessionSchema.PASSWORD, passwordHash);
+					Cookie passwordCookie = new Cookie(CookieSchema.PASSWORD, passwordHash);
 					passwordCookie.setMaxAge(12000);
 					passwordCookie.setPath(VaadinService.getCurrentRequest().getContextPath());
 					VaadinService.getCurrentResponse().addCookie(passwordCookie);
@@ -404,5 +403,14 @@ public class LoginView extends VerticalLayout{
 		loginWindow.setContent(new AddRecruitStudentView(true,true));
 		
 		return loginWindow;
+	}
+	
+	/* ตั้งค่า Session */
+	private void setSession(Item item){
+		getSession().setAttribute(SessionSchema.IS_ROOT, true);
+		getSession().setAttribute(SessionSchema.SCHOOL_ID, item.getItemProperty(SchoolSchema.SCHOOL_ID).getValue());
+		getSession().setAttribute(SessionSchema.SCHOOL_NAME, item.getItemProperty(SchoolSchema.NAME).getValue());
+		getSession().setAttribute(SessionSchema.FIRSTNAME, item.getItemProperty(SchoolSchema.FIRSTNAME).getValue());
+		getSession().setAttribute(SessionSchema.EMAIL, item.getItemProperty(SchoolSchema.EMAIL).getValue());
 	}
 }

@@ -132,12 +132,13 @@ public class RecruitStudentReport {
 			image = ImageIO.read(new URL(DEFAULT_IMAGE + LOGO).openStream());
 			paramMap.put("logo", image );
 		}catch (Exception e) {
-			try {
+			paramMap.put("logo", "");
+			/*try {
 				image = ImageIO.read(new URL(DEFAULT_IMAGE + "default.png").openStream());
 				paramMap.put("logo", image );
 			}catch (Exception e2){
 				paramMap.put("logo", "");
-			}
+			}*/
 		}
 	}
 	

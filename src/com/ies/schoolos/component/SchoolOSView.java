@@ -1,5 +1,6 @@
 package com.ies.schoolos.component;
 
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 
 import javax.servlet.http.Cookie;
@@ -7,9 +8,14 @@ import javax.servlet.http.Cookie;
 import org.vaadin.dialogs.ConfirmDialog;
 
 import com.ies.schoolos.LoginView;
-import com.ies.schoolos.component.building.BuildingView;
-import com.ies.schoolos.component.recruit.RecruitStudentExam;
+import com.ies.schoolos.component.fundamental.BuildingView;
+import com.ies.schoolos.component.fundamental.ClassRoomView;
+import com.ies.schoolos.component.recruit.RecruitStudentConfirmView;
+import com.ies.schoolos.component.recruit.RecruitStudentExamRoom;
+import com.ies.schoolos.component.recruit.RecruitStudentExamScore;
 import com.ies.schoolos.component.recruit.RecruitStudentListView;
+import com.ies.schoolos.component.recruit.RecruitStudentClassRoomTmpView;
+import com.ies.schoolos.component.recruit.RecruitToStudentView;
 import com.ies.schoolos.component.setting.SchoolView;
 import com.ies.schoolos.schema.SessionSchema;
 import com.vaadin.data.Item;
@@ -42,18 +48,18 @@ public class SchoolOSView extends HorizontalSplitPanel{
 	
 	private boolean isSplit = true;
 	
-	//MENUES
+	/* รหัสเมนู */
 	private static int STUDENT_RECRUIT = 10000;
-	//private static int STATISTIC = 11000;
+	private static int FUNDAMENTAL = 11000;
 	private static int SETTING = 12000;
 
-	private HashMap<Integer, Component> _factoryData; 
+	private HashMap<Integer, Class<?>> _factoryData; 
 	private Component currentComponent;
 	
-	//LEFT LAYOUT
+	/* เมนู Slide */
 	private Tree menues;
 	
-	//RIGHT LAYOUT
+	/* เนื้อหา */
 	private VerticalLayout rightLayout;
 	private GridLayout headerLayout;
 	private Button menu;
@@ -66,39 +72,48 @@ public class SchoolOSView extends HorizontalSplitPanel{
 		initDefaultComponent();
 	}
 	
-	//COMPONENT MENU INSIDE
+	/* ลงทะเบียนเมนูในแต่ละหมวด */
 	private void initMenuComponent(){
-		_factoryData = new HashMap<Integer, Component>();
+		_factoryData = new HashMap<Integer, Class<?>>();
 		_factoryData.put(STUDENT_RECRUIT, null);
-		_factoryData.put(STUDENT_RECRUIT+1, new RecruitStudentListView());
-		_factoryData.put(STUDENT_RECRUIT+2, new RecruitStudentExam());
+		_factoryData.put(STUDENT_RECRUIT+1, RecruitStudentListView.class);
+		_factoryData.put(STUDENT_RECRUIT+2, RecruitStudentExamRoom.class);
+		_factoryData.put(STUDENT_RECRUIT+3, RecruitStudentExamScore.class);
+		_factoryData.put(STUDENT_RECRUIT+4, RecruitStudentClassRoomTmpView.class);
+		_factoryData.put(STUDENT_RECRUIT+5, RecruitStudentConfirmView.class);
+		_factoryData.put(STUDENT_RECRUIT+6, RecruitToStudentView.class);
 
-		/*_factoryData.put(STATISTIC, null);
-		_factoryData.put(STATISTIC+1, new RecruitStudentStat());*/
+		_factoryData.put(FUNDAMENTAL, null);
+		_factoryData.put(FUNDAMENTAL+1, BuildingView.class);
+		_factoryData.put(FUNDAMENTAL+2, ClassRoomView.class);
 		
 		_factoryData.put(SETTING, null);
-		_factoryData.put(SETTING+1, new SchoolView());
-		_factoryData.put(SETTING+2, new BuildingView());
-		//_factoryData.put(SETTING+2, null);
+		_factoryData.put(SETTING+1, SchoolView.class);
 	}
 	
 	//GENERATE MENUES
+	/* ชื่อเมนู */
 	private static HierarchicalContainer getMenues() {
         HierarchicalContainer menuContainer = new HierarchicalContainer();
         menuContainer.addContainerProperty("name", String.class, null);
-
+        
         //สมัครเรียน
         initMenu(null, STUDENT_RECRUIT, "สมัครเรียน", menuContainer);
         initMenu(STUDENT_RECRUIT, STUDENT_RECRUIT+1, "ผู้สมัคร", menuContainer); 
         initMenu(STUDENT_RECRUIT, STUDENT_RECRUIT+2, "จัดห้องสอบ", menuContainer); 
-        //สถิติ
-        /*initMenu(null, STATISTIC, "สถิติ", menuContainer);
-        initMenu(STATISTIC, STATISTIC+1, "จำนวนนักเรียน", menuContainer);*/
+        initMenu(STUDENT_RECRUIT, STUDENT_RECRUIT+3, "คะแนนสอบ", menuContainer); 
+        initMenu(STUDENT_RECRUIT, STUDENT_RECRUIT+4, "จัดห้องเรียนชั่วคราว", menuContainer); 
+        initMenu(STUDENT_RECRUIT, STUDENT_RECRUIT+5, "มอบตัวนักเรียน", menuContainer); 
+        initMenu(STUDENT_RECRUIT, STUDENT_RECRUIT+6, "กำหนดรหัสนักเรียน", menuContainer); 
+        
+        //ข้อมูลพื้นฐาน
+        initMenu(null, FUNDAMENTAL, "ข้อมูลพื้นฐาน", menuContainer);
+        initMenu(FUNDAMENTAL, FUNDAMENTAL+1, "อาคารเรียน", menuContainer);
+        initMenu(FUNDAMENTAL, FUNDAMENTAL+2, "ชั้นเรียน", menuContainer);
+        
         //ตั้งค่าระบบ
         initMenu(null, SETTING, "ตั้งค่า", menuContainer);
-        initMenu(SETTING, SETTING+1, "ข้อมูลทั่วไป", menuContainer);
-        initMenu(SETTING, SETTING+2, "อาคารสอบ", menuContainer); 
-        //initMenu(SETTING, SETTING+2, "ผู้ใช้งาน", menuContainer);
+        initMenu(SETTING, SETTING+1, "ข้อมูลโรงเรียน", menuContainer);
         
         return menuContainer;
     }
@@ -112,7 +127,7 @@ public class SchoolOSView extends HorizontalSplitPanel{
         initRightContentLayout();
 	}
 
-	//LEFT MENU TREE
+	/* เมนูซ้ายมือ */
 	private void initLeftMenuLayout(){
 		 //##### Initial Left Layout ######        
         menues = new Tree();
@@ -125,23 +140,27 @@ public class SchoolOSView extends HorizontalSplitPanel{
 			@Override
 			public void valueChange(com.vaadin.data.Property.ValueChangeEvent event) {
 				if(event.getProperty().getValue() != null){
-					/*VerticalLayout currentLayout = new VerticalLayout();
-					currentLayout.setSizeFull();
-					currentLayout.setMargin(true);*/
-					Panel panel = new Panel();
-					panel.setWidth("100%");
-					panel.setHeight("580px");
-					panel.setStyleName("menu-content");
-					
-					rightLayout.removeComponent(currentComponent);
-					
-					//replace a new component
-					panel.setContent(_factoryData.get(Integer.parseInt(event.getProperty().getValue().toString())));
-					currentComponent = panel;
-					rightLayout.addComponent(currentComponent);
-					rightLayout.setExpandRatio(currentComponent, 1);
+					try {
+						/* Initial Object เมนูจาก Class ใน Register Menu */
+						Class<?> clazz = Class.forName(_factoryData.get(Integer.parseInt(event.getProperty().getValue().toString())).getName());
+						Constructor<?> ctor = clazz.getConstructor();
+						Object object = ctor.newInstance();
+						
+						Panel panel = new Panel();
+						panel.setWidth("100%");
+						panel.setHeight("580px");
+						panel.setStyleName("menu-content");
+						
+						rightLayout.removeComponent(currentComponent);
+						/* แทนค่า Object เมนูจากค่าที่ดึงจากการคลิ๊กเมนู*/
+						panel.setContent((Component)object);
+						currentComponent = panel;
+						rightLayout.addComponent(currentComponent);
+						rightLayout.setExpandRatio(currentComponent, 1);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
-					
 			}
 		});
         menues.setImmediate(true);
@@ -154,9 +173,9 @@ public class SchoolOSView extends HorizontalSplitPanel{
         }
 	}
 	
-	//RIGHT HEADER AND CONTENT
+	/* เนื้อหาทางขวามือ */
 	private void initRightContentLayout(){
-		//##### Initial Right Layout ######
+		/* ##### Initial Right Layout ###### */
         rightLayout = new VerticalLayout();
         rightLayout.setSizeFull();
         rightLayout.setStyleName("right-layout");
@@ -169,7 +188,7 @@ public class SchoolOSView extends HorizontalSplitPanel{
 			}
 		});
         setSecondComponent(rightLayout);
-        
+        /* ==== Header === */
         headerLayout = new GridLayout();
 		headerLayout.setStyleName("header");
 		headerLayout.setWidth("100%");
@@ -185,7 +204,8 @@ public class SchoolOSView extends HorizontalSplitPanel{
 			}
 		});
 		rightLayout.addComponent(headerLayout);
-		//Left
+		
+		/* Layout Button ซ้าย Header สำหรับเปิดเมนู */
 		HorizontalLayout menuButtonLayout = new HorizontalLayout();
 		menuButtonLayout.setSizeFull();
 		headerLayout.addComponent(menuButtonLayout);
@@ -203,12 +223,12 @@ public class SchoolOSView extends HorizontalSplitPanel{
 		menuButtonLayout.addComponent(menu);
 		menuButtonLayout.setComponentAlignment(menu, Alignment.MIDDLE_LEFT);
 		
-		//Center
+		/* Layout Branding กลาง Header */
 		branding = new Label("SchoolOS");
 		branding.setStyleName("branding");
 		headerLayout.addComponent(branding);
 		
-		//Right
+		/* Layout User Info ขวา Header */
 		HorizontalLayout menuBarLayout = new HorizontalLayout();
 		menuBarLayout.setSizeFull();
 		headerLayout.addComponent(menuBarLayout);
@@ -238,11 +258,8 @@ public class SchoolOSView extends HorizontalSplitPanel{
 		});	
 	}
 	
-	private void initDefaultComponent(){/*
-		Panel currentLayout = new Panel();
-		currentLayout.setSizeFull();
-		currentLayout.setMargin(true);
-		currentLayout.setStyleName("menu-content");*/
+	/* หน้าแรก */
+	private void initDefaultComponent(){
 		Panel panel = new Panel();
 		panel.setWidth("100%");
 		panel.setHeight("580px");
@@ -255,7 +272,7 @@ public class SchoolOSView extends HorizontalSplitPanel{
 		rightLayout.setExpandRatio(currentComponent, 1);
 	}
 	
-	//INSERT MENU
+	/* ใส่ค่าเมนูบน Layout */
 	@SuppressWarnings("unchecked")
 	private static void initMenu(Integer parentId, int itemId, String value, HierarchicalContainer menuContainer){
 		Item item = null;
@@ -270,11 +287,15 @@ public class SchoolOSView extends HorizontalSplitPanel{
         }
 	}
 	
+	/* ซ่อนเมนู */
 	private void hideMenu(){
 		setSplitPosition(0);
 		isSplit = false;
 	}
 	
+	/* ซ่อนหรือแสดงเมนูตามสถานะปัจจุบัน
+	 * ใช้กรณีคลิ๊กบนพื้นที่หน้าจอ
+	 *  */
 	private void showOrHideMenu(){
 		if(isSplit){
 			setSplitPosition(0);
@@ -285,9 +306,9 @@ public class SchoolOSView extends HorizontalSplitPanel{
 		}
 	}
 	
+	/* ออกจากระบบ */
 	private void logout(){
 		UI ui = UI.getCurrent();
-		//ui.getSession().close();
     	ui.setContent(new LoginView());
     	
     	Cookie emailCookie = new Cookie(SessionSchema.EMAIL, "");

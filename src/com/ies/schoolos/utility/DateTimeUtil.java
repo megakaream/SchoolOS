@@ -1,6 +1,7 @@
 package com.ies.schoolos.utility;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class DateTimeUtil {
@@ -30,5 +31,24 @@ public class DateTimeUtil {
     	else
     		dateStr = dates[0];
 		return dateStr;
+	}
+	
+	/* แสดงวันแรกของปี 1 มค ปี */
+	@SuppressWarnings("deprecation")
+	public static Date getFirstDateOfYear(){
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.YEAR, new Date().getYear()+1900);
+		cal.set(Calendar.DAY_OF_YEAR, 1);    
+		return cal.getTime();
+	}
+	
+	/* แสดงวันสุดท้ายของปี  31 ธค ปี */
+	@SuppressWarnings("deprecation")
+	public static Date getLastDateOfYear(){
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.YEAR, new Date().getYear()+1900);
+		cal.set(Calendar.DAY_OF_YEAR, 11);    
+		cal.set(Calendar.DAY_OF_MONTH, 31);
+		return cal.getTime();
 	}
 }

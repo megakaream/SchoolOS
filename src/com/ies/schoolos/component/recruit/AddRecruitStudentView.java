@@ -246,8 +246,8 @@ public class AddRecruitStudentView extends RecruitStudentLayout {
 				 *   - 001 แสดงถึงลำดับ
 				 * กรณีมีอยู่แล้ว อาจจะการนำเข้าด้วย Excel ก็จะบวกรหัสไปเรื่อย ๆ
 				 * */	
-				SQLContainer freeFormContainer = Container.getInstance().getFreeFormContainer("SELECT * FROM stat_recruit_student_code WHERE school_id= "+
-						UI.getCurrent().getSession().getAttribute(SessionSchema.SCHOOL_ID), StatRecruitStudentCodeSchema.MAX_CODE);
+				SQLContainer freeFormContainer = Container.getInstance().getFreeFormContainer(StatRecruitStudentCodeSchema.getQuery(), StatRecruitStudentCodeSchema.MAX_CODE);
+				
 				int maxCode = 0;
 				for(Object object:freeFormContainer.getItemIds())
 					maxCode = Integer.parseInt(object.toString())+1;

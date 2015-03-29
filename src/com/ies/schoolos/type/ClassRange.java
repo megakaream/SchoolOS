@@ -7,7 +7,7 @@ public class ClassRange extends IndexedContainer{
 
 	private static final long serialVersionUID = 1L;
 	
-	private static String[] classRanges = {"ประถมศึกษา","มัธยมต้น","มัธยมปลาย"};
+	private static String[] classRanges = {"อนุบาล","ประถมศึกษา","มัธยมต้น","มัธยมปลาย","ศาสนา"};
 	
 	public ClassRange() {
 		initContainer();

@@ -10,8 +10,8 @@ public class DbConnection{
 	
 	public static final String USERNAME = "root";
 
-	public static final String PATH = "jdbc:mysql://localhost:3306/schoolos?characterEncoding=UTF-8";
-	//public static final String PATH = "jdbc:mysql://localhost:3306/test?characterEncoding=UTF-8";
+	public static final String PATH = "jdbc:mysql://localhost:3306/schoolos?characterEncoding=UTF-8&autoReconnect=true&failOverReadOnly=false&maxReconnects=10";
+	//public static final String PATH = "jdbc:mysql://localhost:3306/test?characterEncoding=UTF-8&autoReconnect=true&failOverReadOnly=false&maxReconnects=10";
 	
 	//public static final String PASSWORD = "!IeSP@ssw0RD?";
 	public static final String PASSWORD = "";
